@@ -2,7 +2,7 @@ from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet import reactor
 from sys import stdout
 
-HOST = 'localHOST'
+HOST = 'localhost'
 PORT = 8007
 
 class Echo(Protocol):

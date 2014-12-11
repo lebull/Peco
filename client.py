@@ -1,27 +1,55 @@
-from twisted.internet.protocol import Protocol, ClientFactory
-from twisted.internet import reactor
-from sys import stdout
 
-HOST = 'localhost'
-PORT = 8007
+# Copyright (c) Twisted Matrix Laboratories.
+# See LICENSE for details.
 
-class Echo(Protocol):
+
+"""
+An example client. Run simpleserv.py first before running this.
+"""
+
+from twisted.internet import reactor, protocol
+
+
+# a client protocol
+
+class EchoClient(protocol.Protocol):
+
+    """Once connected, send a message, then print the result."""
+    def connectionMade(self):
+        self.transport.write("hello, world!")
+        reactor.callLater(1, self.sendMessage, "Two")
+        reactor.callLater(2, self.sendMessage, "One")
+        reactor.callLater(3, self.sendMessage, "quit")
+
     def dataReceived(self, data):
-        stdout.write(data)
+        "As soon as any data is received, write it back."
+        print data
+    
+    def connectionLost(self, reason):
+        print "connection lost"
 
-class EchoClientFactory(ClientFactory):
-    def startedConnecting(self, connector):
-        print 'Started to connect.'
+    def sendMessage(self, message):
+        self.transport.write(message)
 
-    def buildProtocol(self, addr):
-        print 'Connected.'
-        return Echo()
-
-    def clientConnectionLost(self, connector, reason):
-        print 'Lost connection.  Reason:', reason
+class EchoFactory(protocol.ClientFactory):
+    protocol = EchoClient
 
     def clientConnectionFailed(self, connector, reason):
-        print 'Connection failed. Reason:', reason
+        print "Connection failed:" + str(reason)
+        reactor.stop()
+    
+    def clientConnectionLost(self, connector, reason):
+        print "Connection lost - goodbye!"
+        reactor.stop()
 
-reactor.connectTCP(HOST, PORT, EchoClientFactory())
-reactor.run()
+
+def main():
+
+    ADDRESS = "127.0.0.1"
+    PORT = 10501
+
+    reactor.connectTCP(ADDRESS, PORT, EchoFactory())
+    reactor.run()
+
+if __name__ == '__main__':
+    main()

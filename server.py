@@ -1,25 +1,45 @@
-from twisted.internet.protocol import Factory, Protocol
-from twisted.internet.endpoints import TCP4ServerEndpoint
-from twisted.internet import reactor
 
-PORT = 8007
+# Copyright (c) Twisted Matrix Laboratories.
+# See LICENSE for details.
 
-class QOTD(Protocol):
+
+from twisted.internet import reactor, protocol
+
+
+class PubProtocol(basic.LineReceiver):
+    def __init__(self, factory):
+        self.factory = factory
 
     def connectionMade(self):
-        # self.factory was set by the factory's default buildProtocol:
-        self.transport.write(self.factory.quote + '\r\n')
-        self.transport.loseConnection()
+        self.factory.clients.add(self)
+
+    def connectionLost(self, reason):
+        self.factory.clients.remove(self)
+
+    def lineReceived(self, line):
+        for c in self.factory.clients:
+            c.sendLine("<{}> {}".format(self.transport.getHost(), line))
+
+        if(line == 'quit'):
+            self.transport.loseConnection()
+
+class PubFactory(protocol.Factory):
+    def __init__(self):
+        self.clients = set()
+
+    def buildProtocol(self, addr):
+        return PubProtocol(self)
 
 
-class QOTDFactory(Factory):
+def main():
 
-    # This will be used by the default buildProtocol to create new protocols:
-    protocol = QOTD
+    PORT = 10501
 
-    def __init__(self, quote=None):
-        self.quote = quote or 'An apple a day keeps the doctor away'
+    """This runs the protocol on port 10501"""
+    factory = protocol.PubFactory()
+    factory.protocol = Echo
+    reactor.listenTCP(PORT,factory)
+    reactor.run()
 
-endpoint = TCP4ServerEndpoint(reactor, PORT)
-endpoint.listen(QOTDFactory("configurable quote"))
-reactor.run()
+if __name__ == '__main__':
+    main()

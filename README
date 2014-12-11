@@ -1,0 +1,24 @@
+Peco - Python Echo Central Organizer
+    Yeah, that sounds about right.
+
+--Version--
+0.01
+
+--Dev Goals--
+So I need to be able to get sound from my pc to my mac.  And from my mac to my pc.
+Also, this would be awesome if it could be slapped on a Raspberry Pi and play sound throughout my apartment.  Or the same setup could be expanded to control lights or whatever.  But that's pipedreaming...
+
+Still, the idea is to get messages from point-A to point-B through a subscription-like service.
+
+--Process Goal--
+
+Client-A creates service A.
+Client-A publishes to service A.
+Client-A requests service B.
+
+Client-B creates service B.
+Client-B publishes service B.
+Client-B requests service A.
+
+Client-A consumes service B.
+Client-B consumes service A.

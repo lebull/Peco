@@ -12,7 +12,7 @@ from twisted.internet import reactor, protocol
 
 # a client protocol
 
-class EchoClient(protocol.Protocol):
+class SubscribeProtocol(protocol.Protocol):
 
     """Once connected, send a message, then print the result."""
     def connectionMade(self):
@@ -21,18 +21,29 @@ class EchoClient(protocol.Protocol):
         reactor.callLater(2, self.sendMessage, "One")
         reactor.callLater(3, self.sendMessage, "quit")
 
+
     def dataReceived(self, data):
         "As soon as any data is received, write it back."
-        print data
+        print "Server: {}".format(data)
     
     def connectionLost(self, reason):
         print "connection lost"
 
     def sendMessage(self, message):
+        print "Client: {}".format(message)
         self.transport.write(message)
 
+    def subscribe(self, callback):
+        pass
+
+    def registerService(self):
+        pass
+
+    def publish(self):
+        pass
+
 class EchoFactory(protocol.ClientFactory):
-    protocol = EchoClient
+    protocol = SubscribeProtocol
 
     def clientConnectionFailed(self, connector, reason):
         print "Connection failed:" + str(reason)
@@ -48,7 +59,9 @@ def main():
     ADDRESS = "127.0.0.1"
     PORT = 10501
 
-    reactor.connectTCP(ADDRESS, PORT, EchoFactory())
+    f = EchoFactory()
+
+    reactor.connectTCP(ADDRESS, PORT, f)
     reactor.run()
 
 if __name__ == '__main__':

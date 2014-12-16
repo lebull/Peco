@@ -16,11 +16,10 @@ class SubscribeProtocol(protocol.Protocol):
 
     """Once connected, send a message, then print the result."""
     def connectionMade(self):
-        self.transport.write("hello, world!")
+        self.sendMessage("hello, world!")
         reactor.callLater(1, self.sendMessage, "Two")
         reactor.callLater(2, self.sendMessage, "One")
-        reactor.callLater(3, self.sendMessage, "quit")
-
+        reactor.callLater(3, self.sendMessage, "quit") 
 
     def dataReceived(self, data):
         "As soon as any data is received, write it back."
@@ -28,10 +27,6 @@ class SubscribeProtocol(protocol.Protocol):
     
     def connectionLost(self, reason):
         print "connection lost"
-
-    def sendMessage(self, message):
-        print "Client: {}".format(message)
-        self.transport.write(message)
 
     def subscribe(self, callback):
         pass
@@ -42,8 +37,17 @@ class SubscribeProtocol(protocol.Protocol):
     def publish(self):
         pass
 
+    def sendMessage(self, msg):
+        print "Client: {}".format(msg)
+        self.transport.write("MESSAGE %s\n" % msg)
+
 class EchoFactory(protocol.ClientFactory):
+
     protocol = SubscribeProtocol
+
+    def __init__(self):
+        print "Factory started."   
+
 
     def clientConnectionFailed(self, connector, reason):
         print "Connection failed:" + str(reason)
@@ -56,7 +60,7 @@ class EchoFactory(protocol.ClientFactory):
 
 def main():
 
-    ADDRESS = "127.0.0.1"
+    ADDRESS = "localhost"
     PORT = 10501
 
     f = EchoFactory()

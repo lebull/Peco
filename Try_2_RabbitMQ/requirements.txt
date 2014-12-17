@@ -1,0 +1,8 @@
+Server:
+
+erlang - http://www.erlang.org/download.html
+rabbitmq - http://www.rabbitmq.com/
+
+Client:
+
+pika

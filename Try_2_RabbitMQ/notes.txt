@@ -1,0 +1,16 @@
+This approach will use RabbitMQ.
+
+Pros:
+    Server is completely portable and independent of clients.
+    Clients only reqire a somewhat small wrapper api.
+    Build around publish/subscribe model.
+
+Cons:
+    A bit of setup is required for the server.
+    Not sure about the performance capabilities.
+    Need a separate "bolt on" script if you want to do any server side processing of data.
+        Would need separate in/out topics.
+        Probably would lead to a good deal of overhead.
+	Only works with Python2.X
+	Not exactly thread safe.  Should be ok with one connection per thread.
+

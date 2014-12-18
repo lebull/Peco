@@ -1,0 +1,30 @@
+Native/Mix
+    Looking pretty spiffy right now.
+
+PsycoPy
+    http://www.psychopy.org/index.html
+        Never seen this one.  Not sure if it has streaming support.
+
+PyMedia
+    http://pymedia.org/
+    Haven't seen much of this.  Will it be flexible enough?
+
+
+PyAudio
+    PyAudio example
+        http://sharewebegin.blogspot.com/2013/06/real-time-voice-chat-example-in-python.html
+    Only works with 32 bit on windows.
+    Don't see any packages.
+
+    Downloads
+        http://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+Snack
+    Works through TkInter
+    Have to build it in C (eww)
+
+Pyglet
+    http://www.pyglet.org/
+    PIP
+    No mic streaming? :c
+

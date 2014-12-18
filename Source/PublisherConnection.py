@@ -6,12 +6,18 @@ import pika
 import json
 import time
 
+from threading import Thread
+
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 
+logging.basicConfig(level=logging.ERROR, format=LOG_FORMAT)
 
-class ExamplePublisher(object):
+
+#TODO: Move the logger into the class.
+#TODO: Enable and disable the logger.
+class PublisherConnection(object):
     """This is an example publisher that will handle unexpected interactions
     with RabbitMQ such as channel and connection closures.
 
@@ -51,6 +57,8 @@ class ExamplePublisher(object):
         self.EXCHANGE = exchange
         self.QUEUE = queue
         self.ROUTING_KEY = routing_key
+
+
 
     def connect(self):
         """This method connects to RabbitMQ, returning the connection handle.
@@ -233,6 +241,8 @@ class ExamplePublisher(object):
             self._acked += 1
         elif confirmation_type == 'nack':
             self._nacked += 1
+
+        #This seems to be throwing an error every now an then.  Not sure what's going on. ~Lebby
         self._deliveries.remove(method_frame.method.delivery_tag)
         LOGGER.info('Published %i messages, %i have yet to be confirmed, '
                     '%i were acked and %i were nacked',
@@ -279,13 +289,12 @@ class ExamplePublisher(object):
 #                                    json.dumps(message, ensure_ascii=False),
 #                                    properties)
 
+        #TODO: Is this json here involved with the old crap?
         self._channel.basic_publish(self.EXCHANGE, self.ROUTING_KEY,
                                     json.dumps(inMessage, ensure_ascii=False))
         self._message_number += 1
         self._deliveries.append(self._message_number)
         LOGGER.info('Published message # %i', self._message_number)
-
-
 
     #Edited this to publish hello world 10 times over 5 seconds.
     def start_publishing(self):
@@ -294,14 +303,9 @@ class ExamplePublisher(object):
 
         """
         LOGGER.info('Issuing consumer related RPC commands')
-        self.enable_delivery_confirmations()
-
-
-        for i in range(10):
-            LOGGER.info('Publishing Message')
-            self.publish_message('Hello World!')
-            time.sleep(0.5)
-
+        #Disabled delivery confirmations.  I'm looking to stream stuff for now, and this is throwing an error.
+        #TODO: Check out this method if you want confirmations. ~Lebby
+        #self.enable_delivery_confirmations()
 
     def on_bindok(self, unused_frame):
         """This method is invoked by pika when it receives the Queue.BindOk
@@ -354,44 +358,63 @@ class ExamplePublisher(object):
 
 
 
+#BIG NOTE: http://stackoverflow.com/questions/5273686/run-pika-ioloop-in-background-or-use-custom-ioloop
+#Be sure there is one and only one connection per thread.  Do not spread a connection across threads.
+class Publisher(Thread):
+    def __init__(self, amqp_url, exchange, queue, routing_key):
+
+        Thread.__init__(self)
+
+        self.amqp_url = amqp_url
+        self.exchange = exchange
+        self.queue = queue
+        self.routing_key = routing_key
+
+        self.start()
+
+    def run(self):
+        # Connect to localhost:5672 as guest with the password guest and virtual host "/" (%2F)
+        self.publisherConnection = PublisherConnection(
+            amqp_url = self.amqp_url,
+            exchange = self.exchange,
+            queue = self.queue,
+            routing_key = self.routing_key
+        )
+        self.publisherConnection.run()
+
+    def stop(self):
+        self.publisherConnection.close_connection()
+
 def main():
 
-    from threading import Thread
+    #TODO: 
 
-    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
     #We'll need to stick our publisher in its own thread.
     #TODO:  Docs say that the connection needs to be created in the thread that's running it.  Take a look.
     #http://pika.readthedocs.org/en/latest/faq.html
 
-    #Location
+
     url = 'amqp://guest:guest@localhost:5672/%2F?'
     #Params
     url += '&'.join(['connection_attempts=3', 'heartbeat_interval=3600'])
 
-    # Connect to localhost:5672 as guest with the password guest and virtual host "/" (%2F)
-    example = ExamplePublisher(
+    publisherConnection = Publisher(
         amqp_url = url,
         exchange = 'message',
         queue = 'text',
         routing_key = 'example.text'
     )
 
-    def test():
-        try:
-            example.run()
-        except KeyboardInterrupt:
-            example.stop()
+    #time.sleep(0.5)
 
-    testThread = Thread(target = test)
-    testThread.DEAMON = True
-    testThread.start()
+    try:
+        while(1):
+            time.sleep(1)
+            publisherConnection.publisherConnection.publish_message('Hello World!')
 
-    #TODO: Try to publish messages from the outside.
-
-    time.sleep(5)
-    example.publish_message('Hai!  I\'m not from this object.')
-    LOGGER.info('Done!')
+    except KeyboardInterrupt:
+        publisherConnection.stop()
 
 if __name__ == '__main__':
     main()

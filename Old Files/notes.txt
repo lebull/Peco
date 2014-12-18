@@ -6,7 +6,7 @@ Pros:
     Build around publish/subscribe model.
 
 Cons:
-    A bit of setup is required for the server.
+    A tad bit of setup is required for the server.  Not really much of a con.
     Not sure about the performance capabilities.
     Need a separate "bolt on" script if you want to do any server side processing of data.
         Would need separate in/out topics.

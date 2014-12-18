@@ -1,13 +1,20 @@
 Native/Mix
     Looking pretty spiffy right now.
 
+    ossaudiodev
+        https://docs.python.org/2/library/ossaudiodev.html
+        not sure if unix only?
+
+
 PsycoPy
     http://www.psychopy.org/index.html
         Never seen this one.  Not sure if it has streaming support.
 
 PyMedia
     http://pymedia.org/
+    Downloads: http://www.lfd.uci.edu/~gohlke/pythonlibs/#pymedia
     Haven't seen much of this.  Will it be flexible enough?
+        http://pymedia.org/tut/src/voice_recorder.py.html
 
 
 PyAudio
@@ -28,3 +35,13 @@ Pyglet
     PIP
     No mic streaming? :c
 
+AudioStream
+    https://github.com/kivy/audiostream
+    Check this out.  This looks like it might be fun.
+    Dependancies are Cython package.
+    EXAMPLES require something called Kivy
+        http://kivy.org/#home
+
+
+Others:
+http://pyalsaaudio.sourceforge.net/pyalsaaudio.html (Linux Only)
